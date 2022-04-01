@@ -28,7 +28,7 @@ class Canvas(pygame.sprite.Sprite):
         self.layers = Layers( [], [], [], [], [], )
         self.components = pygame.sprite.Group()
         self.zoom = 1
-        self.zoomCenter = pygame.Vector2(0, 0)  
+        self.zoomCenter = pygame.Vector2(winWidth/3, winHeight/3)  
         self.bgColor = yellow
         self.rect = pygame.Rect(0, 0, 300, 300)
         self.image = pygame.Surface(self.rect.size)
@@ -38,7 +38,7 @@ class Canvas(pygame.sprite.Sprite):
         
         for l in self.layers:
             for i in l:        
-                self.image.blit(pygame.transform.scale(i.image, (i.image.get_width()*self.zoom, i.image.get_height()*self.zoom)), i.rect)
+                self.image.blit(pygame.transform.scale(i.image, (int(i.image.get_width()*self.zoom), int(i.image.get_height()*self.zoom))), self.scale(i.rect))
     
     def update(self):
         self.components.update()
@@ -46,6 +46,12 @@ class Canvas(pygame.sprite.Sprite):
             if event.type == pygame.MOUSEWHEEL:
                 print(event)
         self.render()
+
+    def scale(self, rect):
+        new = pygame.Rect(0, 0, rect.w*self.zoom, rect.h*self.zoom)
+        newPos = pygame.Vector2(rect.topleft)*self.zoom + (1-self.zoom)*pygame.Vector2(self.zoomCenter)
+        new.topleft = newPos
+        return new
 
 class Editor:
     def __init__(self):
