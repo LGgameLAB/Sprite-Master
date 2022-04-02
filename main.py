@@ -37,19 +37,32 @@ class Canvas(pygame.sprite.Sprite):
         self.image.fill(self.bgColor)
         
         for l in self.layers:
-            for i in l:        
-                self.image.blit(pygame.transform.scale(i.image, (int(i.image.get_width()*self.zoom), int(i.image.get_height()*self.zoom))), self.scale(i.rect))
+            for i in l:  
+                scaleRect = self.scale(i.rect)
+                if scaleRect.colliderect(self.rect):
+                    self.image.blit(pygame.transform.scale(i.image, (int(i.image.get_width()*self.zoom), int(i.image.get_height()*self.zoom))), scaleRect)
     
     def update(self):
         self.components.update()
         for event in pygame.event.get():
             if event.type == pygame.MOUSEWHEEL:
                 print(event)
+            if event.type == pygame.MOUSEMOTION:
+                self.zoomCenter = pygame.Vector2(pygame.mouse.get_pos())*self.zoom
+
+    
+        if checkKey("zoomIn"):
+            self.zoom +=0.01*deltaConst
+            
+            
+        if checkKey("zoomOut"):
+            self.zoom *=0.995*deltaConst
+                    
         self.render()
 
     def scale(self, rect):
         new = pygame.Rect(0, 0, rect.w*self.zoom, rect.h*self.zoom)
-        newPos = pygame.Vector2(rect.topleft)*self.zoom + (1-self.zoom)*pygame.Vector2(self.zoomCenter)
+        newPos = (1-self.zoom)*pygame.Vector2(self.zoomCenter) + pygame.Vector2(rect.topleft)*self.zoom 
         new.topleft = newPos
         return new
 
@@ -64,7 +77,8 @@ class Editor:
 
     def new(self):
         self.canvas = Canvas(self)
-        Dot(self)
+        Dot(self.canvas)
+        Dot(self.canvas, pos=[30, 30])
 
     def run(self):
         self.active = True

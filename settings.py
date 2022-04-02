@@ -18,7 +18,7 @@ lightRed = (255, 100, 100)
 purple = (102, 0, 102)
 orangeRed = (255,69,0)
 
-keySet = {'rotR': pygame.K_r, 'rotL': pygame.K_l}
+keySet = {'rotR': pygame.K_r, 'rotL': pygame.K_l, "zoomIn": pygame.K_EQUALS,  "zoomOut": pygame.K_MINUS}
 
 def checkKey(move):
     keys = pygame.key.get_pressed()
@@ -48,6 +48,6 @@ def asset(assetName):
 if not __name__ == '__main__':
     pygame.font.init()
     fonts = {
-        'gameover':pygame.font.SysFont('Comic Sans MS', 23),
+        'sys':pygame.font.SysFont('Arial', 23),
         'score': pygame.font.SysFont('Comic Sans MS', 23)
     }
