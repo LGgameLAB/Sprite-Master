@@ -7,12 +7,34 @@ class Dot(pygame.sprite.Sprite):
         self.master = master
         self.groups = master.components, master.layers.layer1
         pygame.sprite.Sprite.__init__(self, self.groups)
-        pos= (winWidth/3, winHeight/3)
+        self.pos= (winWidth/3, winHeight/3)
         for k, v in kwargs.items():
             self.__dict__[k] = v
-        self.rect = pygame.Rect(pos[0], pos[1], 50, 50)
+        self.rect = pygame.Rect(self.pos[0], self.pos[1], 50, 50)
         self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         pygame.draw.circle(self.image, orangeRed, (self.rect.w/2, self.rect.h/2), 25)
+
+class Camera(pygame.sprite.Sprite):
+
+    def __init__(self, master, width=winWidth, height=winHeight):
+        self.camera = pygame.Rect(0, 0, width, height)
+        self.width = width
+        self.height = height
+        self.game = game
+        sprite.Sprite.__init__(self, game.sprites)
+
+    def apply(self, entity):
+        return entity.rect.move(self.camera.topleft)
+
+    def applyRect(self, rect):
+        return rect.move(self.camera.topleft)
+        
+    def update(self):
+        self.target = self.game.currentBlock
+        x = 0#x = -self.target.rect.centerx + int(winWidth / 2)
+        y = -self.target.rect.centery + int(winHeight / 2)
+
+        self.camera = pygame.Rect(x, y, self.width, self.height)
 
 class Button(pygame.sprite.Sprite):
     '''
