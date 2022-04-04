@@ -1,6 +1,7 @@
 import pygame
 from settings import *
-from components import Dot
+from components import Dot, Button
+from funcs import importPart
 
 class Layers:
     def __init__(self, *args):
@@ -28,18 +29,24 @@ class ToolBar(pygame.sprite.Sprite):
         self.layers = Layers( [], [], [], [], [], )
         # self.camera = Camera()
         self.components = pygame.sprite.Group()
-        self.bgColor = yellow
-        self.rect = pygame.Rect(0, 0, 300, 300)
+        self.bgColor = black
+        self.rect = pygame.Rect(0, winHeight-50, winWidth, 50)
         self.image = pygame.Surface(self.rect.size)
+        self.new()
+    
+    def new(self):
+        self.importBtn = Button(self, (0, 0), wh= (100, 50), onClick=lambda: importPart(self), text="Load Part", center=True)
     
     def render(self):
         self.image.fill(self.bgColor)
         
         for l in self.layers:
-            for i in l:  
-                scaleRect = self.scale(i.rect)
-                if scaleRect.colliderect(self.rect):
-                    self.image.blit(pygame.transform.scale(i.image, (int(i.image.get_width()*self.zoom), int(i.image.get_height()*self.zoom))), scaleRect)
+            for i in l:
+                self.image.blit(i.image, i.rect)
+
+    def update(self):
+        self.components.update()
+        self.render()
 
 class Canvas(pygame.sprite.Sprite):
     def __init__(self, editor):
@@ -61,37 +68,33 @@ class Canvas(pygame.sprite.Sprite):
         for l in self.layers:
             for i in l:  
                 scaleRect = self.scale(i.rect)
-                if scaleRect.colliderect(self.rect):
+                print(scaleRect.topleft)
+                if scaleRect.colliderect(self.rect.move(-self.rect.x, -self.rect.y)):
                     self.image.blit(pygame.transform.scale(i.image, (int(i.image.get_width()*self.zoom), int(i.image.get_height()*self.zoom))), scaleRect)
     
     def update(self):
         self.components.update()
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEWHEEL:
-                self.rect.x += 1
-            # if event.type == pygame.MOUSEMOTION:
-            #     self.zoomCenter = (pygame.Vector2(pygame.mouse.get_pos())-self.zoomCenter)/self.zoom + self.zoomCenter
-
-        print(self.zoomCenter)
-        if pygame.mouse.get_pressed(num_buttons=5)[4]:
-            self.zoom = min(self.zoom+0.001*deltaConst, 3)
-            self.setZoomCenter() if self.zoom < 5 else None
-
-        if pygame.mouse.get_pressed(num_buttons=5)[3]:
-            self.zoom = max(self.zoom*0.9992*deltaConst, 0.5)
-            self.setZoomCenter() if self.zoom > 0.5 else None
+        for event in self.editor.events:
+            pass
+            # if event.type == pygame.MOUSEWHEEL:
+                # if event.y > 0:
+                    # self.zoom = min(self.zoom+0.08*deltaConst, 3)
+                    # self.setZoomCenter() if self.zoom < 5 else None
+                # else:
+                    # self.zoom = max(self.zoom*0.92*deltaConst, 0.5)
+                    # self.setZoomCenter() if self.zoom > 0.5 else None
                     
         self.render()
     
     def setZoomCenter(self):
-        self.zoomCenter = ((pygame.Vector2(pygame.mouse.get_pos())-self.zoomCenter)/self.zoom + self.zoomCenter)*0.5 +self.zoomCenter*0.5
-        self.zoomCenter.x = min(max(0, self.zoomCenter.x), self.rect.width)
-        self.zoomCenter.y = min(max(0, self.zoomCenter.y), self.rect.width)
+        self.zoomCenter = ((pygame.Vector2(pygame.mouse.get_pos())-self.zoomCenter)/self.zoom + self.zoomCenter)
+        # self.zoomCenter.x = min(max(-50, self.zoomCenter.x), self.rect.width)
+        # self.zoomCenter.y = min(max(-50, self.zoomCenter.y), self.rect.width)
 
     def scale(self, rect):
         new = pygame.Rect(0, 0, rect.w*self.zoom, rect.h*self.zoom)
         newPos = (1-self.zoom)*pygame.Vector2(self.zoomCenter) + pygame.Vector2(rect.topleft)*self.zoom 
-        new.center = newPos
+        new.topleft = newPos
         return new
 
 class Editor:
@@ -105,19 +108,21 @@ class Editor:
 
     def new(self):
         self.canvas = Canvas(self)
-        Dot(self.canvas)
-        Dot(self.canvas, pos=[30, 30])
+        self.toolBar = ToolBar(self)
+        # Dot(self.canvas)
+        Dot(self.canvas, pos=[0, 0])
 
     def run(self):
         self.active = True
         while self.active:
-            self.events()
+            self.runEvents()
             self.update()
             self.render()
 
-    def events(self):
-        self.clock.tick()
-        for event in pygame.event.get():
+    def runEvents(self):
+        self.clock.tick(FPS)
+        self.events = pygame.event.get()
+        for event in self.events:
             if event.type == pygame.QUIT:
                 self.quit()
             

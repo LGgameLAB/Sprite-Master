@@ -47,15 +47,14 @@ class Button(pygame.sprite.Sprite):
     |    Button.clicked [bool] - stores whether it has been clicked or ot since initiation
     |    Button.
     '''
-    def __init__(self, editor, pos, **kwargs):
-        self.editor = editor
+    def __init__(self, master, pos, **kwargs):
+        self.master = master
         
         self.onClick = False
-        self.groups = editor.layers
+        self.groups = master.layers, master.components
         self.wh = (200, 60)
         #          Normal           Selected
-        self.colors = (colors.yellow, (255, 255, 255))
-        self.spriteInit = False
+        self.colors = (red, white)
         self.hover = False
         self.clicked = False
         self.instaKill = False
@@ -84,11 +83,12 @@ class Button(pygame.sprite.Sprite):
         self.hover = False
         self.clicked = False
         mouseRect = pygame.Rect(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 1, 1)
+        mouseRect.move_ip(-self.master.rect.x, -self.master.rect.y)
         if mouseRect.colliderect(self.rect):
             self.hover = True
         
         if self.hover:
-            for event in pygame.event.get():
+            for event in self.master.editor.events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.clicked = True
                     if self.onClick:
@@ -104,3 +104,29 @@ class Button(pygame.sprite.Sprite):
     
     def reset(self):
         self.clicked = False
+
+class Part(pygame.sprite.Sprite):
+    def __init__(self, master, image, **kwargs):
+        self.editor = master.editor
+        self.master = master
+        self.groups = master.components, master.layers.layer1
+        pygame.sprite.Sprite.__init__(self, self.groups)
+        self.pos = (0, 0)
+        for k, v in kwargs.items():
+            self.__dict__[k] = v
+        
+        self.loadImg(image)
+        self.rect = pygame.Rect(0, 0, self.image.get_width(), self.image.get_height())
+        self.rect.topleft = self.pos
+    
+    def render(self):
+        pass
+
+    def update(self):
+        print(self.pos)
+    
+    def loadImg(self, img):
+        img = pygame.image.load(img)
+        mask = pygame.mask.from_surface(img)
+        self.image = pygame.Surface(mask.get_size())
+        self.image.blit(img, (0, 0), mask.get_rect())

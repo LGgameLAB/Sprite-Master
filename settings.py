@@ -48,6 +48,7 @@ def asset(assetName):
 if not __name__ == '__main__':
     pygame.font.init()
     fonts = {
-        'sys':pygame.font.SysFont('Arial', 23),
+        'sys':pygame.font.SysFont('arial', 15),
+        'sys2': pygame.font.SysFont("lucidasans", 15),
         'score': pygame.font.SysFont('Comic Sans MS', 23)
     }
